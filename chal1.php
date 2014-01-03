@@ -1,6 +1,6 @@
 <?php
 
-require 'C:/Users/ddremund/Downloads/vendor/autoload.php';
+require 'vendor/autoload.php';
 
 use OpenCloud\Rackspace;
 
