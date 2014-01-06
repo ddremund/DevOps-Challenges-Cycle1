@@ -3,6 +3,9 @@
 require 'vendor/autoload.php';
 use OpenCloud\Rackspace;
 
+/**
+* Print script usage message
+*/
 function printUsage()
 {
 	print __FILE__ . " -rRegion -nServerName -fFlavorID -iImageID -cCredsFile\n";
@@ -10,6 +13,31 @@ function printUsage()
 	print "Menus are supplied for Region, FlavorID, and ImageID if not provided.";
 }
 
+/**
+* Read command line input in a cross-platform fashion
+* (readline not available on Windows)
+* @return string
+*/
+function read()
+{
+	$fp = fopen("php://stdin", "r");
+	$in = fgets($fp, 4094);
+	fclose($fp);
+
+	#strip newline
+	(PHP_OS == "WINNT") ? ($read = str_replace("\r\n", "", $in)) : 
+		($read = str_replace("\n", "", $in));
+
+	return $read;
+}
+
+/**
+* Return regions for a service
+* @param Catalog $catalog
+* @param string $serviceName
+* @param string $serviceType
+* @return array
+*/
 function getRegions($catalog, $serviceName, $serviceType)
 {
 	$regions = array();
@@ -23,12 +51,19 @@ function getRegions($catalog, $serviceName, $serviceType)
 	return $regions;
 }
 
+/**
+* Choose an option from an enumerated array based on a prompt
+* @param array $array
+* @param string $prompt
+* @return any
+*/
 function makeChoice($array, $prompt)
 {
 	foreach($array as $index => $item)
 		print "$index:  $item\n";
 	do {
-		$choice = readline($prompt);
+		echo $prompt;
+		$choice = read();
 	} while(!in_array($choice, array_keys($array)));
 
 	return $array[$choice];
