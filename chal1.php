@@ -8,9 +8,9 @@ use OpenCloud\Rackspace;
 */
 function printUsage()
 {
-	print __FILE__ . " -rRegion -nServerName -fFlavorID -iImageID -cCredsFile\n";
+	print "\nUSAGE:\n" . basename(__FILE__) . " -rRegion -nServerName -fFlavorID -iImageID -kSSHKeyFile -cCredsFile\n\n";
 	print "CredsFile defaults to ~/.rackspace_cloud_credentials.\n";
-	print "Menus are supplied for Region, FlavorID, and ImageID if not provided.";
+	print "Menus are supplied for Region, FlavorID, and ImageID if not provided.\n\n";
 }
 
 /**
@@ -64,12 +64,36 @@ function makeChoice($array, $prompt)
 	do {
 		echo $prompt;
 		$choice = read();
-	} while(!in_array($choice, array_keys($array)));
+	} while (!array_key_exists($choice, $array));
 
 	return $array[$choice];
 }
 
-$options = getopt("r:n:f:i:c:");
+function makeChoiceFromCollection($iterator, $prompt)
+{
+	$index = 0;
+	$ids = array();
+	foreach ($iterator as $item)
+	{
+		echo $index . ":  " . $item->name . "\n";
+		$ids[$index] = $item->id;
+		$index++;
+	}
+	do {
+		echo $prompt;
+		$choice = read();
+	} while (!array_key_exists($choice, $ids));
+
+	return $ids[$choice];
+}
+
+$options = getopt("r:n:f:i:k:c:");
+
+if (!array_key_exists("n", $options))
+{
+	printUsage();
+	exit(0);
+}
 
 if ($_SERVER['OS'] == 'Windows_NT')
 	$homedir = $_SERVER['HOMEDRIVE'] . $_SERVER['HOMEPATH'] . '\\';
@@ -86,7 +110,6 @@ $client = new Rackspace(Rackspace::US_IDENTITY_ENDPOINT, array(
 ));
 $client->authenticate();
 
-
 if (!array_key_exists("r", $options))
 {
 	$regions = getRegions($client->getCatalog(), 'cloudServersOpenStack', 'compute');
@@ -94,5 +117,12 @@ if (!array_key_exists("r", $options))
 }
 
 $compute = $client->computeService('cloudServersOpenStack', $options["r"]);
+
+$flavors = $compute->FlavorList(FALSE);
+
+if (!array_key_exists("f", $options))
+	$options["f"] = makeChoiceFromCollection($flavors, "Select a flavor: ");
+
+echo "Using flavor ID '" . $options["f"] . "'.\n";
 
 ?>
