@@ -95,7 +95,7 @@ if (!array_key_exists("n", $options))
 	exit(0);
 }
 
-if ($_SERVER['OS'] == 'Windows_NT')
+if (in_array('OS', array_keys($_SERVER)) && $_SERVER['OS'] == 'Windows_NT')
 	$homedir = $_SERVER['HOMEDRIVE'] . $_SERVER['HOMEPATH'] . '\\';
 else
 	$homedir = $_SERVER['HOME'] . '/';
